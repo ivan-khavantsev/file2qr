@@ -31,7 +31,7 @@ public class Main {
     public static BufferedImage createQRFromData(byte[] data, int partNumber, long crc32) {
         try {
             byte[] signature = "Q2F".getBytes();
-            ByteBuffer byteBuffer = ByteBuffer.allocate(signature.length +  8 + 4 + data.length);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(signature.length + 8 + 4 + data.length);
             byteBuffer.put(signature);
             byteBuffer.putLong(crc32);
             byteBuffer.putInt(partNumber);
@@ -91,11 +91,7 @@ public class Main {
         long crc32 = getCRC32(filename);
         FileInputStream fileInputStream = new FileInputStream(file);
         int parts = (int) Math.ceil(file.length() / (double) DATA_PART_SIZE);
-
-        double a = (double)parts / (double)QR_CODES_PER_PAGE;
-        double b = Math.ceil(a);
-
-        int pages = (int) Math.ceil((double)parts / QR_CODES_PER_PAGE);
+        int pages = (int) Math.ceil((double) parts / QR_CODES_PER_PAGE);
 
         String folderToSavePath = file.getAbsolutePath() + "-QR/";
         File folderToSavePathFile = new File(folderToSavePath);
@@ -136,12 +132,12 @@ public class Main {
                     long crc32 = dataInputStream.readLong();
                     int partNumber = dataInputStream.readInt();
 
-                    byte[] dataToWrite  = new byte[bytes.length - 15];
+                    byte[] dataToWrite = new byte[bytes.length - 15];
                     dataInputStream.read(dataToWrite);
 
                     new File(pathFile.getAbsolutePath() + "/parts/").mkdirs();
 
-                    File writeFile = new File( pathFile.getAbsolutePath() + "/parts/" + Long.toHexString(crc32).toLowerCase() + "-" + (partNumber+1) );
+                    File writeFile = new File(pathFile.getAbsolutePath() + "/parts/" + Long.toHexString(crc32).toLowerCase() + "." + String.format("%03d", (partNumber + 1)));
                     FileOutputStream fileOutputStream = new FileOutputStream(writeFile);
                     fileOutputStream.write(dataToWrite);
                     fileOutputStream.flush();
@@ -165,7 +161,7 @@ public class Main {
 
                 Данные перед впихиванием в qr код можно паковать. хотя, лучше это предоставить пользователю.
                 ---
-                При чтении берём все коды из всех картинок в папке и для каждого создаём файл формата <hash>-<part>
+                При чтении берём все коды из всех картинок в папке и для каждого создаём файл формата <hash>.<part> (001..)
                 Эти файлы содержат просто данные, коотрые можно склеить любым тотал коммандером. Но в программу тоже можно внести эту функцию.
                 Когда итоговый файл будет собираться с помощью этой программы, то будет проверяться хеш.
 
@@ -174,6 +170,12 @@ public class Main {
                 Листа А4 11.7x8.3 дюймов то есть при DPI 300 это 3510x2490 пикселей.
                 Возьмём поля по 300 пикселей с каждой стороны, то есть итоговое поле будет 2910 х 1890
 
+                В первый блок поместим хедер содержащий количество частей, название файла
+                При считывании первого qr мы записываем файл <hash>.crc в таком формате:
+                filename=archive.7z
+                size=41250
+                crc32=783e30f1
+                В таком случае файл можно собрать с помощью total commander
 
              */
 
