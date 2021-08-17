@@ -1,2 +1,2 @@
-C:\Soft\jdk-16.0.2\bin\java -jar %~dp0\out\artifacts\file2qr\file2qr.jar -d %1
-pause
+java -classpath %~dp0\target\lib\*;%~dp0\target\file2qr-1.0-SNAPSHOT.jar ru.khavantsev.file2qr.Main -d %1
+pause    

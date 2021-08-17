@@ -1,3 +1,5 @@
+package ru.khavantsev.file2qr;
+
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -176,6 +178,14 @@ public class Main {
                 size=41250
                 crc32=783e30f1
                 В таком случае файл можно собрать с помощью total commander
+
+				Задачи:
+				- Универсальный хедер
+				- CRC части
+				- Имя файла в хедере первой части
+				- Размер файла в первой части
+				- Универсальный обработчик коммандной строки
+				- Параметр коммандной строки: собрать файл
 
              */
 
