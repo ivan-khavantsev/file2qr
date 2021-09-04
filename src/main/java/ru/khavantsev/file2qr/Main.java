@@ -107,7 +107,7 @@ public class Main {
         }
     }
 
-    public static void images2File(String path) {
+    public static void images2Parts(String path) {
         File pathFile = new File(path);
         File[] files = pathFile.listFiles();
         QRCodeMultiReader qrCodeMultiReader = new QRCodeMultiReader();
@@ -115,15 +115,16 @@ public class Main {
         for (File file : files) {
             try {
                 String extension = FilenameUtils.getExtension(file.getName());
-                if (!("png".equals(extension))) continue;
+                if (!("png".equals(extension)) && !("jpg".equals(extension))) continue;
                 InputStream barCodeInputStream = new FileInputStream(file);
                 BufferedImage barCodeBufferedImage = ImageIO.read(barCodeInputStream);
                 LuminanceSource source = new BufferedImageLuminanceSource(barCodeBufferedImage);
 
                 BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
+
                 Map<DecodeHintType, Object> decodeHints = new HashMap<>();
-                decodeHints.put(DecodeHintType.TRY_HARDER, "5");
+                decodeHints.put(DecodeHintType.TRY_HARDER, "3");
 
                 Result[] results = qrCodeMultiReader.decodeMultiple(bitmap, decodeHints);
                 for (Result result : results) {
@@ -150,8 +151,35 @@ public class Main {
                 continue;
             }
         }
+    }
 
+    public static void text2Parts(String filename){
+        File file = new File(filename);
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
 
+                byte[] bytes = Base64.getDecoder().decode(line);
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+                DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+                byte[] signature = dataInputStream.readNBytes(3);
+                long crc32 = dataInputStream.readLong();
+                int partNumber = dataInputStream.readInt();
+
+                byte[] dataToWrite = new byte[bytes.length - 15];
+                dataInputStream.read(dataToWrite);
+
+                new File(file.getParentFile().getAbsolutePath() + "/parts/").mkdirs();
+                File writeFile = new File(file.getParentFile().getAbsolutePath() + "/parts/" + Long.toHexString(crc32).toLowerCase() + "." + String.format("%03d", (partNumber + 1)));
+                FileOutputStream fileOutputStream = new FileOutputStream(writeFile);
+                fileOutputStream.write(dataToWrite);
+                fileOutputStream.flush();
+                fileOutputStream.close();
+                // process the line.
+            }
+        } catch (Throwable t){
+            System.out.println(t);
+        }
     }
 
     public static void main(String[] args) {
@@ -196,7 +224,11 @@ public class Main {
                     System.exit(0);
                 }
                 if ("-d".equals(args[0])) {
-                    images2File(args[1]);
+                    images2Parts(args[1]);
+                    System.exit(0);
+                }
+                if ("-dt".equals(args[0])) {
+                    text2Parts(args[1]);
                     System.exit(0);
                 }
             }
