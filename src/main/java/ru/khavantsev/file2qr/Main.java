@@ -6,6 +6,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.multi.qrcode.QRCodeMultiReader;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
@@ -13,21 +14,22 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.CRC32;
 
 public class Main {
 
-    public static int QR_CODES_PER_ROW = 4; // Количество кодов строку
-    public static int QR_CODES_PER_COL = 6; // Количество кодов на колонку
+    public static int QR_CODES_PER_ROW = 5; // Количество кодов строку
+    public static int QR_CODES_PER_COL = 7; // Количество кодов на колонку
     public static int QR_CODES_PER_PAGE = QR_CODES_PER_ROW * QR_CODES_PER_COL; // Количество кодов на странице
-    public static int PAGE_MARGIN = 300; // Отступ на странице
-    public static int PAGE_WIDTH = 2490; // Отступ на странице
-    public static int PAGE_HEIGHT = 3510; // Отступ на странице
+    public static int PAGE_MARGIN = 20; // Отступ на странице
 
-    public static int QR_CODES_SIZE = 480; // Размер QR кода в пикселях
-    public static int QR_CODES_SPACE = 10; // Расстояние между QR кодами в пикселях
-    public static int DATA_PART_SIZE = 939; // Размер данных одного кода
+    public static int QR_CODES_SIZE = 380; // Размер QR кода в пикселях
+    public static int QR_CODES_SPACE = 0; // Расстояние между QR кодами в пикселях
+    public static int DATA_PART_SIZE = 2880; // Размер данных одного кода
+    public static int PAGE_WIDTH = QR_CODES_PER_ROW * (QR_CODES_SIZE + QR_CODES_SPACE) + PAGE_MARGIN * 2; // Ширина листа 2490 - А4
+    public static int PAGE_HEIGHT = QR_CODES_PER_COL * (QR_CODES_SIZE + QR_CODES_SPACE) + PAGE_MARGIN * 2; // Высота листа 3510 - А4
 
 
     public static BufferedImage createQRFromData(byte[] data, int partNumber, long crc32) {
@@ -39,17 +41,18 @@ public class Main {
             byteBuffer.putInt(partNumber);
             byteBuffer.put(data);
 
-            String dataString = Base64.getEncoder().encodeToString(byteBuffer.array());
+            String dataString = new String(byteBuffer.array(), StandardCharsets.ISO_8859_1);
 
             Map<EncodeHintType, Object> encodeHints = new HashMap<>();
             encodeHints.put(EncodeHintType.MARGIN, 0); // Чтобы при генерации кода не добавлялись белые рамки вокруг кода и код занимал всю указаную область
+            encodeHints.put(EncodeHintType.CHARACTER_SET, "ISO-8859-1");
+            encodeHints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L); // максимум данных
 
             BitMatrix matrix = new MultiFormatWriter().encode(
                     dataString,
                     BarcodeFormat.QR_CODE, QR_CODES_SIZE, QR_CODES_SIZE, encodeHints);
 
-            BufferedImage barCodeBufferedImage = MatrixToImageWriter.toBufferedImage(matrix);
-            return barCodeBufferedImage;
+            return MatrixToImageWriter.toBufferedImage(matrix);
         } catch (Throwable throwable) {
             return null;
         }
@@ -125,10 +128,11 @@ public class Main {
 
                 Map<DecodeHintType, Object> decodeHints = new HashMap<>();
                 decodeHints.put(DecodeHintType.TRY_HARDER, "3");
+                decodeHints.put(DecodeHintType.CHARACTER_SET, "ISO-8859-1");
 
                 Result[] results = qrCodeMultiReader.decodeMultiple(bitmap, decodeHints);
                 for (Result result : results) {
-                    byte[] bytes = Base64.getDecoder().decode(result.getText());
+                    byte[] bytes = result.getText().getBytes(StandardCharsets.ISO_8859_1);
                     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
                     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
                     byte[] signature = dataInputStream.readNBytes(3);
