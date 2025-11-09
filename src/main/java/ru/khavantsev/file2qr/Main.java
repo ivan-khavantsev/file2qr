@@ -157,35 +157,6 @@ public class Main {
         }
     }
 
-    public static void text2Parts(String filename){
-        File file = new File(filename);
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-
-                byte[] bytes = Base64.getDecoder().decode(line);
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-                DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-                byte[] signature = dataInputStream.readNBytes(3);
-                long crc32 = dataInputStream.readLong();
-                int partNumber = dataInputStream.readInt();
-
-                byte[] dataToWrite = new byte[bytes.length - 15];
-                dataInputStream.read(dataToWrite);
-
-                new File(file.getParentFile().getAbsolutePath() + "/parts/").mkdirs();
-                File writeFile = new File(file.getParentFile().getAbsolutePath() + "/parts/" + Long.toHexString(crc32).toLowerCase() + "." + String.format("%03d", (partNumber + 1)));
-                FileOutputStream fileOutputStream = new FileOutputStream(writeFile);
-                fileOutputStream.write(dataToWrite);
-                fileOutputStream.flush();
-                fileOutputStream.close();
-                // process the line.
-            }
-        } catch (Throwable t){
-            System.out.println(t);
-        }
-    }
-
     public static void main(String[] args) {
 
         /*
@@ -231,15 +202,9 @@ public class Main {
                     images2Parts(args[1]);
                     System.exit(0);
                 }
-                if ("-dt".equals(args[0])) {
-                    text2Parts(args[1]);
-                    System.exit(0);
-                }
             }
             System.out.println("No parameters");
             System.exit(0);
-
-
         } catch (Throwable throwable) {
             System.out.println(throwable);
         }
