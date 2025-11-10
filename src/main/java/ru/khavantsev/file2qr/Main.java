@@ -20,14 +20,14 @@ import java.util.zip.CRC32;
 
 public class Main {
 
-    public static int QR_CODES_PER_ROW = 5; // Количество кодов строку
-    public static int QR_CODES_PER_COL = 7; // Количество кодов на колонку
+    public static int QR_CODES_PER_ROW = 7; // Количество кодов строку
+    public static int QR_CODES_PER_COL = 10; // Количество кодов на колонку
     public static int QR_CODES_PER_PAGE = QR_CODES_PER_ROW * QR_CODES_PER_COL; // Количество кодов на странице
-    public static int PAGE_MARGIN = 20; // Отступ на странице
+    public static int PAGE_MARGIN = 0; // Отступ на странице
 
-    public static int QR_CODES_SIZE = 380; // Размер QR кода в пикселях
+    public static int QR_CODES_SIZE = 330; // Размер QR кода в пикселях
     public static int QR_CODES_SPACE = 0; // Расстояние между QR кодами в пикселях
-    public static int DATA_PART_SIZE = 2880; // Размер данных одного кода
+    public static int DATA_PART_SIZE = 954; // Размер данных одного кода
     public static int PAGE_WIDTH = QR_CODES_PER_ROW * (QR_CODES_SIZE + QR_CODES_SPACE) + PAGE_MARGIN * 2; // Ширина листа 2490 - А4
     public static int PAGE_HEIGHT = QR_CODES_PER_COL * (QR_CODES_SIZE + QR_CODES_SPACE) + PAGE_MARGIN * 2; // Высота листа 3510 - А4
 
